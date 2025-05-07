@@ -13,14 +13,13 @@ section .data
     questionCapital db "Was ist Ihr Kapital in CHF? ",0
     questionInterest db "Wie hoch ist Ihr Zins? ",0
     questionYears db "Welche Laufzeit in Jahren soll berechnet werden? ",0
-    answer db 10, "Ihr Zinseszins in CHF beträgt: "
+    answer db 10, "Ihr Vermögen: CHF ", 0
+    total db "Total Zinseszins: CHF ", 0
     nl db 10,0
-    ;stri db "123456", 10, 0
-    stri db 0x31, 0x30, 0x30, 0x30, 0x0a, 0x00
 
 section .bss
     capital resb 7
-    interest resb 2
+    interest resb 3
     years resb 3
     result resd 1
     buffer resb 32
@@ -29,7 +28,7 @@ section .text
     global  _start
 
 %define CAPITAL_BUFFER_SIZE 7
-%define INTEREST_BUFFER_SIZE 2
+%define INTEREST_BUFFER_SIZE 3
 %define YEARS_BUFFER_SIZE 3
 
 _start:
@@ -75,37 +74,11 @@ _start:
     xor r10, r10
     mov r10, [result]
 
-    ;rax
-    ;xor r8, r8
-    ;mov rbx, 3
-    ;call _getPowerOfTen
-    ;mov r8, rax
-
-    ;mov rsi, buffer
-    ;call _intToStr
-
-    ;call _print
-
-    ; 100 franken, 2 prozent, 3 jahre
-
-    ;rbx
-    ;mov rsi, stri
-    ;call _stringToInt
-
-    ;mov rax, r8
-    ;mov rcx, r9
-    ;mul rcx
-
-    ;xor rax, rax
-    ;mov rax, r9
-    ;xor rdx, rdx
-    ;mov rcx, 100
-    ;div rcx  
-
-
+    ; Print the answer text
     mov rax, answer
     call _print
 
+    ; Move interest percentage back 2 decimal places
     xor rdx, rdx
     xor rax, rax
     cvtsi2sd xmm0, r9
@@ -113,59 +86,56 @@ _start:
     cvtsi2sd xmm1, rax 
     divsd xmm0, xmm1
 
+    ; Add 1.0 to the interest rate
     xor rax, rax
     mov rax, 1
     cvtsi2sd xmm1, rax
     addsd xmm0, xmm1
 
-    ;movq [result], xmm0
-
+    ; Calculate the power of (1 + interest rate) ^ years
     movsd xmm2, xmm0
     mov rsi, r10
     call _getPower
 
+    ; Multiply the capital with the power of (1 + interest rate) ^ years
     cvtsi2sd xmm0, r8
     mulsd xmm0, xmm2
 
-    ;movq [result], xmm0
+    ; Calculate the actual monetary increase
+    cvtsi2sd xmm5, r8
+    movsd xmm6, xmm0
+    subsd xmm6, xmm5
 
+    ; Convert the results to integer
     xor rax, rax
-    cvttsd2si rax, xmm0
+    cvttsd2si rax, xmm0 ; Convert total
+    cvttsd2si r12, xmm6 ; Convert interest
 
-    ;xor rdi, rdi
-    ;mov rdi, rax
-    ;xor rax, rax
-;
-    ;mov rax, answer
-    ;call _print
-    ;xor rax, rax
-    ;mov rax, rdi
-
+    ; Convert integer to string and print the answer
     mov rsi, buffer
     call _intToStr
     call _print
 
+    ; Print a newline
     xor rax, rax
     mov rax, nl
     call _print
 
-    ;movq rax, xmm0
+    ; Print total
+    xor rax, rax
+    mov rax, total
+    call _print
 
-    nop
+    xor rax, rax
+    mov rax, r12
+    mov rsi, buffer
+    call _intToStr
+    call _print
 
-    ;mov rbx, r8
-    ;xor rdx, rdx
-    ;div rbx
-;
-    ;cvtsi2sd xmm0, rax
-    ;cvtsi2sd xmm1, rbx
-    ;mov rdi, 1000
-    ;cvtsi2sd xmm2, rdi
-    ;divsd xmm1, xmm2
-    ;addsd xmm0, xmm1
-    ;;movq mm0, xmm0
-
-    
+    ; Print a newline
+    xor rax, rax
+    mov rax, nl
+    call _print
 
     call _exit
 
@@ -195,22 +165,6 @@ _getPower:
 powerDone:
     movsd xmm2, xmm3
     ret
-
-; rbx: number
-_getPowerOfTen:
-    xor rax, rax
-    mov rax, 1
-    xor rdx, rdx
-    
-.getPowerOfTenLoop: 
-    cmp rdx, rbx
-    jge powerOfTenDone
-    imul rax, 10
-    inc rdx
-    jmp .getPowerOfTenLoop
-
-powerOfTenDone:
-    ret  
 
 ; rsi: string
 _stringToInt:
@@ -258,13 +212,6 @@ _intToStr:
     mov rax, rsi            ; result pointer in rax
     ret
 
-; rdi: capital
-; rsi: interest
-; rdx: years
-_calculateCompuntInterest:
-    mov rax, 0
-    ret
-
 ; rsi: buffer
 ; rdx: buffer size
 _getInput:
@@ -277,6 +224,7 @@ _getInput:
 ; rax: string
 _print:
     push rax
+
     mov rbx, 0
 _printLoop:
     inc rax
@@ -289,6 +237,6 @@ _printLoop:
     mov rdi, 1
     pop rsi
     mov rdx, rbx
-    syscall
+    syscall         ; messes with r11 todo restore r11
 
     ret
