@@ -1,13 +1,5 @@
-;nasm -felf64 -g zinseszins.asm && ld zinseszins.o      -> -g for debugging with gdb
-;nasm -felf64 -g zinseszins.asm && ld zinseszins.o && ./a.out
-;gdb ./a.out
-;break _start
-;run
-;step
-;next for stepping over
-;info registers for seeing the registers
-;p &<bss> for printing the content of a variable
-;x/16xb 0x40209 OR p *(long *) 0x402098 to print contents
+;nasm -felf64 -g zinseszins.asm && ld zinseszins.o -g -> for debugging with gdb -> regular run: gdb ./a.out
+;nasm -felf64 -g zinseszins.asm && ld zinseszins.o && ./a.out -> for normal execution
 
 section .data
     questionCapital db "Was ist Ihr Kapital in CHF? ",0
@@ -78,6 +70,14 @@ _start:
     mov rax, answer
     call _print
 
+    ; End cycle counter
+    xor rax, rax
+    xor rdx, rdx
+    rdtsc               ; Read time-stamp counter (result in EDX:EAX)
+    shl rdx, 32         ; Shift high 32 bits to the left
+    or rax, rdx         ; Combine EDX:EAX into RAX (64-bit timestamp)
+    mov r14, rax 
+
     ; Move interest percentage back 2 decimal places
     xor rdx, rdx
     xor rax, rax
@@ -116,6 +116,15 @@ _start:
     call _intToStr
     call _print
 
+    ; End cycle counter
+    xor rax, rax
+    xor rdx, rdx
+    rdtsc           ; Read time-stamp counter again
+    shl rdx, 32     ; Shift high 32 bits
+    or rax, rdx     ; Combine into 64-bit value in RAX
+    mov r15, rax
+    sub r15, r14    ; r15 holds the amount of cycles used for the calculations
+
     ; Print a newline
     xor rax, rax
     mov rax, nl
@@ -126,6 +135,7 @@ _start:
     mov rax, total
     call _print
 
+    ; Print total integer
     xor rax, rax
     mov rax, r12
     mov rsi, buffer
@@ -147,7 +157,7 @@ _exit:
     ret
 
 ; xmm2: base
-; rsi; exponent
+; rsi:  exponent
 _getPower:
     xor rax, rax
     mov rax, 1
@@ -176,9 +186,9 @@ atoi_loop:
     test rdx, rdx
     jz atoi_done
 
-    cmp rdx, '0'             ; Check if it's a digit ('0')
+    cmp rdx, '0'
     jl atoi_done
-    cmp rdx, '9'             ; Check if it's a digit ('9')
+    cmp rdx, '9'
     jg atoi_done
 
     sub rdx, '0'
@@ -195,21 +205,21 @@ atoi_done:
 ; rax: number to convert - result pointer
 ; rsi: pointer to buffer (must be large enough, e.g. 32 bytes)
 _intToStr:
-    mov rcx, 10             ; base 10
-    mov rbx, rsi            ; save original buffer pointer
-    add rsi, 30             ; go to end of buffer
-    mov byte [rsi], 0       ; null terminator
+    mov rcx, 10         ; base 10
+    mov rbx, rsi        ; save original buffer pointer
+    add rsi, 30         ; go to end of buffer
+    mov byte [rsi], 0   ; null terminator
 
 .convertLoop:
     dec rsi
     xor rdx, rdx
-    div rcx                 ; rax /= 10, rdx = remainder
+    div rcx             ; rax /= 10, rdx = remainder
     add dl, '0'
     mov [rsi], dl
     test rax, rax
     jnz .convertLoop
 
-    mov rax, rsi            ; result pointer in rax
+    mov rax, rsi
     ret
 
 ; rsi: buffer
@@ -237,6 +247,6 @@ _printLoop:
     mov rdi, 1
     pop rsi
     mov rdx, rbx
-    syscall         ; messes with r11 todo restore r11
+    syscall         ; messes with r11, TODO: restore r11
 
     ret
