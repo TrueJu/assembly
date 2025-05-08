@@ -1,5 +1,6 @@
 ;nasm -felf64 -g zinseszins.asm && ld zinseszins.o -g -> for debugging with gdb -> regular run: gdb ./a.out
 ;nasm -felf64 -g zinseszins.asm && ld zinseszins.o && ./a.out -> for normal execution
+;around 11k clock cycles ~ 0.000004 seconds
 
 section .data
     questionCapital db "Was ist Ihr Kapital in CHF? ",0
