@@ -8,8 +8,8 @@
         "args": [
           "-f", "elf64",
           "-g",
-          "zinseszins/zinseszins.asm",
-          "-o", "zinseszins/zinseszins.o"
+          "bubblesort/bubblesort.asm",
+          "-o", "bubblesort/bubblesort.o"
         ],
         "group": {
           "kind": "build",
@@ -22,8 +22,8 @@
         "type": "shell",
         "command": "ld",
         "args": [
-          "-o", "zinseszins/zinseszins",
-          "zinseszins/zinseszins.o"
+          "-o", "bubblesort/bubblesort",
+          "bubblesort/bubblesort.o"
         ],
         "dependsOn": ["build-asm"],
         "problemMatcher": []

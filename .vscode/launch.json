@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch zinseszins with GDB",
+            "name": "Launch bubblesort with GDB",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/zinseszins/zinseszins",
+            "program": "${workspaceFolder}/bubblesort/bubblesort",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
