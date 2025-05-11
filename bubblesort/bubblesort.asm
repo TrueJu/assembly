@@ -20,26 +20,29 @@ _start:
 
 
 _bubblesort:
-    nop
+    mov r10, r8
+
 .outerLoop:     ; i
-    cmp r8, 0
+    cmp r10, 0
     je bubblesortDone
 
-    sub r8, 1
+    mov r12, r9
+    sub r10, 1
+
+    call _nL
 
 .innerLoop:     ; j
-    cmp r9, 0
+    cmp r12, 0
     je .outerLoop
 
-    sub r9, 1
+    sub r12, 1
 
-    mov rax, r9
+    mov rax, r12
     mov rsi, buffer
     call _intToStr
     call _print
 
-    ret
-
+    call .innerLoop
 
 bubblesortDone:
     ret
@@ -124,6 +127,14 @@ _getInput:
     mov rdi, 0
     syscall
 
+    ret
+
+_nL:
+    sub rsp, 16
+    mov word [rsp], 0x0A00
+    mov rax, rsp
+    call _print
+    add rsp, 16
     ret
 
 ; rax: string
