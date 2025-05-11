@@ -11,12 +11,38 @@ section .text
     global  _start
 
 _start:
-    mov r8, 5
-    mov r9, 5
+    mov r8, 5   ; i
+    mov r9, 5   ; j
 
-.outerloo
+    call _bubblesort
 
     call _exit
+
+
+_bubblesort:
+    nop
+.outerLoop:     ; i
+    cmp r8, 0
+    je bubblesortDone
+
+    sub r8, 1
+
+.innerLoop:     ; j
+    cmp r9, 0
+    je .outerLoop
+
+    sub r9, 1
+
+    mov rax, r9
+    mov rsi, buffer
+    call _intToStr
+    call _print
+
+    ret
+
+
+bubblesortDone:
+    ret
 
 _exit:
     mov rax, 60
