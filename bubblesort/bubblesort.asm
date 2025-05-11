@@ -14,6 +14,8 @@ _start:
     mov r8, 5
     mov r9, 5
 
+.outerloo
+
     call _exit
 
 _exit:
