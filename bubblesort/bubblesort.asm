@@ -12,7 +12,7 @@ section .text
 
 _start:
     mov r8, 5   ; i
-    mov r9, 5   ; j
+    ;mov r9, 5   ; j
 
     call _bubblesort
 
@@ -20,22 +20,30 @@ _start:
 
 
 _bubblesort:
-    mov r10, r8
+    mov r10, 0
+    call .outerLoop
+
+.incrementOuter:
+    xor r13, r13
+    add r10, 1
 
 .outerLoop:     ; i
-    cmp r10, 0
+    cmp r10, r8
     je bubblesortDone
 
-    mov r12, r9
-    sub r10, 1
+    mov r12, 0
 
     call _nL
 
 .innerLoop:     ; j
-    cmp r12, 0
-    je .outerLoop
+    mov r13, r8
+    sub r13, r10
+    sub r13, 1
 
-    sub r12, 1
+    cmp r12, r13
+    je .incrementOuter
+
+    add r12, 1
 
     mov rax, r12
     mov rsi, buffer
