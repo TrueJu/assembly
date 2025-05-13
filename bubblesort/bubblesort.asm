@@ -11,10 +11,15 @@ section .text
     global  _start
 
 _start:
-    mov r8, 5   ; i
-    ;mov r9, 5   ; j
 
-    call _bubblesort
+    mov rax, 12345 ; input
+
+
+
+    ;mov r15, 12345 ; input 
+    ;mov r8, 5   ; i
+;
+    ;call _bubblesort
 
     call _exit
 
@@ -29,11 +34,11 @@ _bubblesort:
 
 .outerLoop:     ; i
     cmp r10, r8
-    je bubblesortDone
+    jg bubblesortDone
 
     mov r12, 0
 
-    call _nL
+    ;call _nL
 
 .innerLoop:     ; j
     mov r13, r8
@@ -41,14 +46,17 @@ _bubblesort:
     sub r13, 1
 
     cmp r12, r13
-    je .incrementOuter
-
-    add r12, 1
+    jg .incrementOuter
 
     mov rax, r12
     mov rsi, buffer
     call _intToStr
     call _print
+
+    sub rsp, 40 
+    mov r14, rsp 
+
+    add r12, 1
 
     call .innerLoop
 
@@ -137,13 +145,14 @@ _getInput:
 
     ret
 
-_nL:
-    sub rsp, 16
-    mov word [rsp], 0x0A00
-    mov rax, rsp
-    call _print
-    add rsp, 16
-    ret
+;_nL:
+;    xor rax, rax
+;    sub rsp, 16
+;    mov word [rsp], 0x0A00
+;    mov rax, rsp
+;    call _print
+;    add rsp, 16
+;    ret
 
 ; rax: string
 _print:
@@ -163,4 +172,24 @@ _printLoop:
     mov rdx, rbx
     syscall         ; messes with r11, TODO: restore r11
 
+    ret
+
+; rax: int to reverse
+_reverseInteger:
+    mov rbx, 0
+
+    mov rcx, 10
+.rvIntLoop:
+    xor rdx, rdx
+    div rcx
+
+    imul rbx, 10
+    add rbx, rdx
+    
+    cmp rax, 0
+    jne .rvIntLoop
+
+    mov rax, rbx
+    xor rbx, rbx
+    xor rcx, rcx
     ret
