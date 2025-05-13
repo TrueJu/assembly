@@ -2,6 +2,8 @@
 ;nasm -felf64 -g bubblesort.asm && ld bubblesort.o && ./a.out -> for normal execution
 
 section .data
+    askForInteger db "Bitte geben Sie eine Zahlenreihe ein: ",0
+    sortedAnswer db "Die sortierte Zahlenreihe ist: ",0
 
 section .bss
     input resb 7
@@ -14,6 +16,9 @@ section .text
 %define INPUT_BUFFER_SIZE 7
 
 _start:
+    mov rax, askForInteger
+    call _print
+
     mov rsi, input
     mov rdx, INPUT_BUFFER_SIZE
     call _getInput
@@ -22,27 +27,34 @@ _start:
     call _stringToInt
     mov rax, [result]
 
-    call _reverseInteger
-    mov rbx, 3
-    call _getNthInteger
+    push rax
+    call _getIntLength
+    mov r8, rax
+    pop rax
 
-    ;call _reverseInteger
+    call _bubblesort
 
+    push rax
+    mov rax, sortedAnswer
+    call _print
+    pop rax
 
-    ;mov r15, 12345 ; input
-    ;mov r8, 5   ; i
-;
-    ;call _bubblesort
+    mov rsi, buffer
+    call _intToStr
+    call _print
 
     call _exit
 
 
+; rax: list of integers to sort
+;  r8: length of the list
 _bubblesort:
     mov r10, 0
+    mov r14, 0
+    mov r15, 0
     call .outerLoop
 
 .incrementOuter:
-    xor r13, r13
     add r10, 1
 
 .outerLoop:     ; i
@@ -50,8 +62,6 @@ _bubblesort:
     jg bubblesortDone
 
     mov r12, 0
-
-    ;call _nL
 
 .innerLoop:     ; j
     mov r13, r8
@@ -61,13 +71,35 @@ _bubblesort:
     cmp r12, r13
     jg .incrementOuter
 
-    mov rax, r12
-    mov rsi, buffer
-    call _intToStr
-    call _print
+    push rax
+    mov rbx, r12
+    call _getNthInteger
+    mov r14, rax
+    pop rax
 
-    sub rsp, 40 
-    mov r14, rsp 
+    push rax
+    mov rbx, r12
+    add rbx, 1
+    call _getNthInteger
+    mov r15, rax
+    pop rax
+
+    add r12, 1
+
+    cmp r15, r14
+    jg .innerLoop
+
+    sub r12, 1
+
+    ; switch the two numbers inside the list
+    mov rbx, r12
+    mov rsi, r15
+    call _replaceNthInteger
+
+    mov rbx, r12
+    add rbx, 1
+    mov rsi, r14
+    call _replaceNthInteger
 
     add r12, 1
 
@@ -75,6 +107,7 @@ _bubblesort:
 
 bubblesortDone:
     ret
+
 
 _exit:
     mov rax, 60
@@ -189,6 +222,9 @@ _print:
 
 ; rax: int to reverse
 _reverseInteger:
+    push rbx
+    push rcx
+    push rdx
     mov rbx, 0
 
     mov rcx, 10
@@ -203,14 +239,21 @@ _reverseInteger:
     jne .rvIntLoop
 
     mov rax, rbx
-    xor rbx, rbx
-    xor rcx, rcx
+    pop rdx
+    pop rcx
+    pop rbx
     ret
 
 ; rax: int to index
 ; rbx: index
 _getNthInteger:
+    call _reverseInteger
+
     push r8
+    push rdx
+    push rcx
+    push rbx
+
     xor r8, r8
     mov r8, 10
 
@@ -230,8 +273,90 @@ _getNthInteger:
 
 .getNthIntegerDone:
     mov rax, rdx
-    xor rdx, rdx
-    xor rcx, rcx
-    xor rbx, rbx
+    
+    pop rbx
+    pop rcx
+    pop rdx
     pop r8
+
+    ret
+
+
+; rax: int
+; rbx: index to replace
+; rsi: int to replace with
+_replaceNthInteger:
+    call _reverseInteger
+
+    push r9
+    push r8
+    push rdx
+    push rcx
+    push rbx
+    push rsi
+
+    xor r8, r8
+    mov r8, 10
+    mov r9, 0
+
+    add rbx, 1
+    mov rcx, 0
+
+.intReplaceIndexLoop:
+    xor rdx, rdx
+    div r8
+
+    add rcx, 1
+    cmp rbx, rcx
+    jne .dontReplace
+
+.replace:
+    imul r9, 10
+    add r9, rsi
+
+    cmp rax, 0
+    jne .intReplaceIndexLoop
+    je .replaceNthIntegerDone
+
+.dontReplace:
+    imul r9, 10
+    add r9, rdx
+
+    cmp rax, 0
+    jne .intReplaceIndexLoop
+
+.replaceNthIntegerDone:
+    mov rax, r9
+    
+    pop rsi
+    pop rbx
+    pop rcx
+    pop rdx
+    pop r8
+    pop r9
+
+    ret
+
+; rax: int to get the length of
+_getIntLength:
+    push rcx
+    push rdx
+    push r8
+
+    mov r8, 0
+    mov rcx, 10
+.rvIntLoop:
+    xor rdx, rdx
+    div rcx
+
+    add r8, 1
+    
+    cmp rax, 0
+    jne .rvIntLoop
+
+    mov rax, r8
+
+    pop r8
+    pop rdx
+    pop rcx
     ret
