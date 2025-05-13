@@ -4,19 +4,32 @@
 section .data
 
 section .bss
+    input resb 7
     result resd 1
     buffer resb 32
 
 section .text
     global  _start
 
+%define INPUT_BUFFER_SIZE 7
+
 _start:
+    mov rsi, input
+    mov rdx, INPUT_BUFFER_SIZE
+    call _getInput
 
-    mov rax, 12345 ; input
+    mov rsi, input
+    call _stringToInt
+    mov rax, [result]
+
+    call _reverseInteger
+    mov rbx, 3
+    call _getNthInteger
+
+    ;call _reverseInteger
 
 
-
-    ;mov r15, 12345 ; input 
+    ;mov r15, 12345 ; input
     ;mov r8, 5   ; i
 ;
     ;call _bubblesort
@@ -79,14 +92,14 @@ _getPower:
 
 .getPowerLoop:
     cmp rsi, 0
-    jle powerDone
+    jle .powerDone
     
     mulsd xmm3, xmm2
 
     dec rsi
     jmp .getPowerLoop
     
-powerDone:
+.powerDone:
     movsd xmm2, xmm3
     ret
 
@@ -95,23 +108,23 @@ _stringToInt:
     xor rax, rax
     xor rcx, rcx
 
-atoi_loop:
+.atoi_loop:
     movzx rdx, byte [rsi]
     test rdx, rdx
-    jz atoi_done
+    jz .atoi_done
 
     cmp rdx, '0'
-    jl atoi_done
+    jl .atoi_done
     cmp rdx, '9'
-    jg atoi_done
+    jg .atoi_done
 
     sub rdx, '0'
     imul rax, rax, 10
     add rax, rdx
     inc rsi
-    jmp atoi_loop
+    jmp .atoi_loop
 
-atoi_done:
+.atoi_done:
     mov [result], eax
 
     ret
@@ -159,12 +172,12 @@ _print:
     push rax
 
     mov rbx, 0
-_printLoop:
+.printLoop:
     inc rax
     inc rbx
     mov cl, [rax]
     cmp cl, 0
-    jne _printLoop
+    jne .printLoop
 
     mov rax, 1
     mov rdi, 1
@@ -192,4 +205,33 @@ _reverseInteger:
     mov rax, rbx
     xor rbx, rbx
     xor rcx, rcx
+    ret
+
+; rax: int to index
+; rbx: index
+_getNthInteger:
+    push r8
+    xor r8, r8
+    mov r8, 10
+
+    add rbx, 1
+    mov rcx, 0
+
+.intIndexLoop:
+    xor rdx, rdx
+    div r8
+
+    add rcx, 1
+    cmp rbx, rcx
+    je .getNthIntegerDone
+
+    cmp rax, 0
+    jne .intIndexLoop
+
+.getNthIntegerDone:
+    mov rax, rdx
+    xor rdx, rdx
+    xor rcx, rcx
+    xor rbx, rbx
+    pop r8
     ret
