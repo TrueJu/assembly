@@ -43,6 +43,8 @@ _start:
     call _intToStr
     call _print
 
+    call _nL
+
     call _exit
 
 
@@ -191,14 +193,14 @@ _getInput:
 
     ret
 
-;_nL:
-;    xor rax, rax
-;    sub rsp, 16
-;    mov word [rsp], 0x0A00
-;    mov rax, rsp
-;    call _print
-;    add rsp, 16
-;    ret
+_nL:
+    xor rax, rax
+    sub rsp, 16
+    mov word [rsp], 0x0A00
+    mov rax, rsp
+    call _print
+    add rsp, 16
+    ret
 
 ; rax: string
 _print:
