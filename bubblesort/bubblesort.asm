@@ -2,18 +2,18 @@
 ;nasm -felf64 -g bubblesort.asm && ld bubblesort.o && ./a.out -> for normal execution
 
 section .data
-    askForInteger db "Bitte geben Sie eine Zahlenreihe ein: ",0
+    askForInteger db "Bitte geben Sie eine Zahlenreihe ein (max 8 Nummern lang): ",0
     sortedAnswer db "Die sortierte Zahlenreihe ist: ",0
 
 section .bss
-    input resb 7
+    input resb 9
     result resd 1
     buffer resb 32
 
 section .text
     global  _start
 
-%define INPUT_BUFFER_SIZE 7
+%define INPUT_BUFFER_SIZE 9
 
 _start:
     mov rax, askForInteger
