@@ -27,11 +27,6 @@ _start:
     call _stringToInt
     mov rax, [result]
 
-    push rax
-    call _getIntLength
-    mov r8, rax
-    pop rax
-
     call _bubblesort
 
     push rax
@@ -54,6 +49,12 @@ _bubblesort:
     mov r10, 0
     mov r14, 0
     mov r15, 0
+
+    push rax
+    call _getIntLength
+    mov r8, rax
+    pop rax
+    
     call .outerLoop
 
 .incrementOuter:
