@@ -44,7 +44,6 @@ _start:
 
 
 ; rax: list of integers to sort
-;  r8: length of the list
 _bubblesort:
     mov r10, 0
     mov r14, 0
@@ -54,7 +53,7 @@ _bubblesort:
     call _getIntLength
     mov r8, rax
     pop rax
-    
+
     call .outerLoop
 
 .incrementOuter:
